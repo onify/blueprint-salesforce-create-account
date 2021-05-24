@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_0uawtgn" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.5.0">
+  <bpmn:process id="salesforce-create-account" name="Onify Blueprint: Create new account in Salesforce" isExecutable="true">
+    <bpmn:startEvent id="start" name="Create new account">
+      <bpmn:outgoing>Flow_1srzk7d</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="generateAccessToken" name="Generate salesforce access token">
+      <bpmn:documentation />
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="payload">
+              <camunda:map>
+                <camunda:entry key="title">Generate Salesforce access token</camunda:entry>
+                <camunda:entry key="description">Create account workflow</camunda:entry>
+                <camunda:entry key="hide">true</camunda:entry>
+              </camunda:map>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="method">POST</camunda:inputParameter>
+            <camunda:inputParameter name="url">/admin/processes/start/salesforce-create-account</camunda:inputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>onifyElevatedApiRequest</camunda:connectorId>
+        </camunda:connector>
+        <camunda:properties>
+          <camunda:property name="alert_stateid" value="waitForAccessToken" />
+        </camunda:properties>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_1srzk7d</bpmn:incoming>
+      <bpmn:outgoing>Flow_0hclah5</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:intermediateCatchEvent id="waitForAccessToken" name="Wait for access token">
+      <bpmn:extensionElements>
+        <camunda:inputOutput>
+          <camunda:outputParameter name="salesforceToken">${content.output.output}</camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_0hclah5</bpmn:incoming>
+      <bpmn:outgoing>Flow_19u5a06</bpmn:outgoing>
+      <bpmn:messageEventDefinition id="MessageEventDefinition_1q40d58" />
+    </bpmn:intermediateCatchEvent>
+    <bpmn:sequenceFlow id="Flow_0hclah5" sourceRef="generateAccessToken" targetRef="waitForAccessToken" />
+    <bpmn:sequenceFlow id="Flow_1srzk7d" sourceRef="start" targetRef="generateAccessToken" />
+    <bpmn:endEvent id="end" name="Account created">
+      <bpmn:incoming>Flow_14xaf52</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_19u5a06" sourceRef="waitForAccessToken" targetRef="createAccount" />
+    <bpmn:serviceTask id="createAccount" name="Create new account in Salesforce">
+      <bpmn:extensionElements>
+        <camunda:connector>
+          <camunda:inputOutput>
+            <camunda:inputParameter name="json">
+              <camunda:map>
+                <camunda:entry key="Name">ACME Corp</camunda:entry>
+                <camunda:entry key="BillingCity">New York</camunda:entry>
+                <camunda:entry key="BillingCountry">USA</camunda:entry>
+                <camunda:entry key="BillingStreet">Road runner road 1</camunda:entry>
+                <camunda:entry key="Description">The Acme Corporation is a fictional corporation</camunda:entry>
+                <camunda:entry key="Industry">Chemicals</camunda:entry>
+                <camunda:entry key="Phone">0123456789</camunda:entry>
+                <camunda:entry key="Type">Customer - Direct</camunda:entry>
+                <camunda:entry key="Website">https://acme.com</camunda:entry>
+              </camunda:map>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="responseType">json</camunda:inputParameter>
+            <camunda:inputParameter name="method">POST</camunda:inputParameter>
+            <camunda:inputParameter name="headers">
+              <camunda:map>
+                <camunda:entry key="Authorization">Bearer ${environment.output.salesforceToken.accessToken}</camunda:entry>
+              </camunda:map>
+            </camunda:inputParameter>
+            <camunda:inputParameter name="url">${environment.output.salesforceToken.instanceUrl}/services/data/${environment.output.salesforceToken.apiVersion}/sobjects/Account</camunda:inputParameter>
+            <camunda:outputParameter name="body">${body}</camunda:outputParameter>
+          </camunda:inputOutput>
+          <camunda:connectorId>httpRequest</camunda:connectorId>
+        </camunda:connector>
+        <camunda:inputOutput>
+          <camunda:outputParameter name="AccountId">${content.output.body.id}</camunda:outputParameter>
+        </camunda:inputOutput>
+      </bpmn:extensionElements>
+      <bpmn:incoming>Flow_19u5a06</bpmn:incoming>
+      <bpmn:outgoing>Flow_14xaf52</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:sequenceFlow id="Flow_14xaf52" sourceRef="createAccount" targetRef="end" />
+    <bpmn:textAnnotation id="TextAnnotation_16k65y1">
+      <bpmn:text>Please update account information (json variable)</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_0vi2b0q" sourceRef="createAccount" targetRef="TextAnnotation_16k65y1" />
+    <bpmn:textAnnotation id="TextAnnotation_00cpn4s">
+      <bpmn:text>Start from a form or from somwhere else?</bpmn:text>
+    </bpmn:textAnnotation>
+    <bpmn:association id="Association_0idrh57" sourceRef="start" targetRef="TextAnnotation_00cpn4s" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="salesforce-create-account">
+      <bpmndi:BPMNShape id="TextAnnotation_00cpn4s_di" bpmnElement="TextAnnotation_00cpn4s">
+        <dc:Bounds x="230" y="85" width="140" height="40" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="TextAnnotation_16k65y1_di" bpmnElement="TextAnnotation_16k65y1">
+        <dc:Bounds x="690" y="83" width="169" height="43" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_0hclah5_di" bpmnElement="Flow_0hclah5">
+        <di:waypoint x="410" y="210" />
+        <di:waypoint x="463" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1srzk7d_di" bpmnElement="Flow_1srzk7d">
+        <di:waypoint x="228" y="210" />
+        <di:waypoint x="310" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_19u5a06_di" bpmnElement="Flow_19u5a06">
+        <di:waypoint x="499" y="210" />
+        <di:waypoint x="560" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_14xaf52_di" bpmnElement="Flow_14xaf52">
+        <di:waypoint x="660" y="210" />
+        <di:waypoint x="722" y="210" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNShape id="Activity_1wuvp3f_di" bpmnElement="generateAccessToken">
+        <dc:Bounds x="310" y="170" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_124bjxl_di" bpmnElement="waitForAccessToken">
+        <dc:Bounds x="463" y="192" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="444" y="235" width="75" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="start">
+        <dc:Bounds x="192" y="192" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="182" y="235" width="57" height="27" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1h5ybw1_di" bpmnElement="createAccount">
+        <dc:Bounds x="560" y="170" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0oipik9_di" bpmnElement="end">
+        <dc:Bounds x="722" y="192" width="36" height="36" />
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="701" y="235" width="79" height="14" />
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Association_0idrh57_di" bpmnElement="Association_0idrh57">
+        <di:waypoint x="220" y="195" />
+        <di:waypoint x="264" y="125" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Association_0vi2b0q_di" bpmnElement="Association_0vi2b0q">
+        <di:waypoint x="655" y="171" />
+        <di:waypoint x="708" y="126" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
