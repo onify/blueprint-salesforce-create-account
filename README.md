@@ -7,7 +7,7 @@
 
 In this Blueprint we want to show how easy it is to create objects and in this case accounts in Salesforce. We use our own Blueprint ([Onify Blueprint: Generate access token for Salesforce API](https://github.com/onify/blueprint-salesforce-generate-access-token)) to fix the access and then you are ready to go. Salesforce has over 100 object types build in that you could either create, update or delete via their REST API. The only thing stopping you now is your imagination :-)
 
-![Onify Blueprint: Create new Account in Salesforce via API](flow.png "Flow")
+![Onify Blueprint: Create new Account in Salesforce via API](blueprint.jpg "Blueprint")
 
 ## Requirements
 
